@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Trattoria Fuoriorario</title>
+<meta name="description" content="Prenota un tavolo: giorno, ora e menù. Cucina aperta a qualunque ora.">
+<meta property="og:title" content="Trattoria Fuoriorario">
+<meta property="og:description" content="Prenota un tavolo: giorno, ora e menù. Cucina aperta a qualunque ora.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f5efe3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1d1a17" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c43e2a'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23fffcf6' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a small trattoria's booking page. Three steps (when, menu, recap) and a receipt at the end. */
+:root {
+  --paper: #f5efe3;
+  --sheet: #fffcf6;
+  --ink: #2b231d;
+  --muted: #6e6255;
+  --rule: #e2d7c4;
+  --accent: #c43e2a;        /* pomodoro */
+  --accent-ink: #ffffff;
+  --accent-soft: #f8e0d8;
+  --olive: #56643a;
+  --olive-soft: #e5e9d7;
+  --disabled: #bdb2a4;
+  --prova: #f3e2a6;
+  --shadow: 0 1px 0 rgba(43, 35, 29, .05), 0 10px 28px -16px rgba(43, 35, 29, .35);
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1d1a17;
+    --sheet: #282420;
+    --ink: #f2eadf;
+    --muted: #b4a898;
+    --rule: #3d3630;
+    --accent: #e3654f;
+    --accent-ink: #1d1a17;
+    --accent-soft: #4a2a22;
+    --olive: #aebd82;
+    --olive-soft: #343a26;
+    --disabled: #5f574e;
+    --prova: #4d4220;
+    --shadow: 0 1px 0 rgba(0, 0, 0, .2), 0 10px 28px -16px rgba(0, 0, 0, .7);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.5 var(--sans);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; margin: 0; line-height: 1.15; }
+
+.checks {
+  height: 12px;
+  background: repeating-conic-gradient(var(--accent) 0 25%, transparent 0 50%) 0 0 / 12px 12px;
+  opacity: .9;
+}
+.wrap { width: 100%; max-width: 980px; margin: 0 auto; padding: 0 16px; }
+
+/* Header */
+.top { padding-top: 28px; padding-bottom: 8px; }
+.kicker {
+  margin: 0 0 6px;
+  font-size: .78rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent);
+}
+.top h1 { font-size: clamp(2.1rem, 7vw, 3.4rem); letter-spacing: -.01em; }
+.lede { margin: 10px 0 0; max-width: 34em; color: var(--muted); font-size: 1.05rem; }
+
+.prova {
+  margin-top: 14px; padding: 10px 14px; border-radius: 12px;
+  background: var(--prova); font-size: .9rem;
+  display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between;
+}
+.prova button { border: 1px solid currentColor; background: transparent; border-radius: 999px; padding: 4px 12px; font-size: .85rem; }
+
+/* Stepper */
+.steps { margin: 22px 0 18px; }
+.steps ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.steps button {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--rule); background: var(--sheet);
+  border-radius: 999px; padding: 6px 14px 6px 6px; font-weight: 600; font-size: .95rem;
+}
+.steps button span {
+  display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--paper); border: 1px solid var(--rule); font-size: .8rem;
+}
+.steps button[aria-current="step"] { border-color: var(--accent); background: var(--accent-soft); }
+.steps button[aria-current="step"] span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.steps button:disabled { opacity: .45; }
+
+main { flex: 1; }
+.step { animation: in .28s ease-out; }
+@keyframes in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.step-title { font-size: clamp(1.5rem, 4.5vw, 2rem); margin-bottom: 4px; }
+.step-sub { margin: 0 0 16px; color: var(--muted); }
+
+.card {
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 18px;
+  padding: 18px; box-shadow: var(--shadow);
+}
+.card h2 { font-size: 1.35rem; }
+
+/* Step 1: calendar + time */
+.when { display: grid; gap: 16px; }
+@media (min-width: 820px) { .when { grid-template-columns: 1.05fr 1fr; align-items: start; } }
+
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.cal-head h2 { font-size: 1.3rem; text-align: center; flex: 1; }
+.round {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--rule); background: var(--paper);
+  display: grid; place-items: center; font-size: 1.3rem; line-height: 1;
+}
+.round:disabled { opacity: .35; }
+.cal-dow, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-dow span { text-align: center; font-size: .75rem; font-weight: 600; color: var(--muted); letter-spacing: .06em; padding-bottom: 4px; }
+.cal-dow span:nth-child(n+6) { color: var(--accent); }
+.day {
+  aspect-ratio: 1; min-height: 40px; border-radius: 12px;
+  border: 1px solid transparent; background: transparent;
+  font-weight: 500; font-size: 1rem; font-variant-numeric: tabular-nums;
+  position: relative;
+}
+.day:not(:disabled):hover { background: var(--accent-soft); }
+.day.weekend:not(:disabled) { color: var(--accent); }
+.day.today { border-color: var(--olive); }
+.day.today::after {
+  content: "oggi"; position: absolute; left: 0; right: 0; bottom: 3px;
+  font-size: .58rem; font-weight: 600; letter-spacing: .04em; color: var(--olive);
+}
+.day[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) !important; border-color: var(--accent); }
+.day[aria-pressed="true"].today::after { color: var(--accent-ink); }
+.day:disabled { color: var(--disabled); }
+
+.clock {
+  font-family: var(--serif); font-weight: 500; font-variant-numeric: tabular-nums lining-nums;
+  font-size: clamp(2.6rem, 11vw, 3.6rem); line-height: 1; margin: 6px 0 4px; letter-spacing: .01em;
+}
+.clock .dim { color: var(--disabled); }
+.time h3 { font-family: var(--sans); font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 16px 0 8px; }
+.hint { margin: 2px 0 0; color: var(--muted); font-size: .92rem; }
+.chips { display: grid; gap: 6px; }
+.chips.hours { grid-template-columns: repeat(6, 1fr); }
+.chips.minutes { grid-template-columns: repeat(4, 1fr); }
+@media (min-width: 520px) and (max-width: 819px) { .chips.hours { grid-template-columns: repeat(8, 1fr); } }
+.chip {
+  min-height: 44px; border-radius: 12px; border: 1px solid var(--rule); background: var(--paper);
+  font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.chip:hover { border-color: var(--accent); }
+.chip.night { background: transparent; border-style: dashed; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); border-style: solid; color: var(--accent-ink); }
+
+/* Chef's note */
+.chef {
+  margin-top: 16px; padding: 14px 16px; border-radius: 14px;
+  background: var(--olive-soft); border-left: 4px solid var(--olive);
+}
+.chef p { margin: 0; }
+.chef .lbl { font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--olive); margin-bottom: 4px; }
+.chef .txt { font-family: var(--serif); font-style: italic; font-size: 1.08rem; line-height: 1.4; }
+
+/* Step 2: menu */
+.menu { display: grid; gap: 16px; }
+.course-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.count { font-size: .85rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.count.on { color: var(--accent); }
+.course-note { margin: 2px 0 12px; color: var(--muted); font-size: .95rem; }
+.items { display: grid; gap: 8px; }
+@media (min-width: 640px) { .items { grid-template-columns: 1fr 1fr; } }
+.item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 14px; border-radius: 14px; border: 1px solid var(--rule); background: var(--paper);
+  cursor: pointer; transition: background-color .15s, border-color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.item:hover { border-color: var(--accent); }
+.item.on { background: var(--accent-soft); border-color: var(--accent); }
+.item input {
+  appearance: none; -webkit-appearance: none; margin: 1px 0 0; flex: none;
+  width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--muted); background: var(--sheet);
+  display: grid; place-content: center; cursor: pointer;
+}
+.item input::before {
+  content: ""; width: 12px; height: 7px; margin-top: -3px;
+  border-left: 3px solid var(--accent-ink); border-bottom: 3px solid var(--accent-ink);
+  transform: rotate(-45deg) scale(0); transition: transform .12s ease-out;
+}
+.item input:checked { background: var(--accent); border-color: var(--accent); }
+.item input:checked::before { transform: rotate(-45deg) scale(1); }
+.item b { display: block; font-weight: 600; }
+.item small { display: block; color: var(--muted); font-size: .88rem; margin-top: 1px; }
+
+/* Step 3 + done: receipt */
+.receipt {
+  position: relative; max-width: 620px; margin: 0 auto;
+  background: var(--sheet); border: 1px solid var(--rule); border-radius: 18px;
+  padding: 22px 20px; box-shadow: var(--shadow);
+}
+.r-name { font-family: var(--serif); font-weight: 600; font-size: 1.35rem; margin: 0; text-align: center; }
+.r-sub { margin: 2px 0 0; text-align: center; color: var(--muted); font-size: .85rem; letter-spacing: .12em; text-transform: uppercase; }
+.r-sep { border: 0; border-top: 2px dashed var(--rule); margin: 18px 0; }
+.r-when { display: grid; grid-template-columns: repeat(3, auto); gap: 10px 16px; margin: 0; justify-content: space-between; }
+.r-when dt { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.r-when dd { margin: 2px 0 0; font-family: var(--serif); font-size: 1.15rem; font-weight: 500; }
+.r-when .wide { grid-column: 1 / -1; }
+.r-block-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.r-block-head h3 { font-size: 1.1rem; }
+.edit { border: 0; background: none; color: var(--accent); font-weight: 600; font-size: .9rem; padding: 4px 0; text-decoration: underline; text-underline-offset: 3px; }
+.r-course { display: grid; grid-template-columns: 6.5em 1fr; gap: 2px 12px; padding: 7px 0; border-bottom: 1px dotted var(--rule); }
+.r-course:last-child { border-bottom: 0; }
+.r-course dt { color: var(--muted); font-size: .92rem; }
+.r-course dd { margin: 0; font-weight: 500; }
+.r-course dd.none { color: var(--disabled); font-weight: 400; }
+.note-lbl { display: block; font-weight: 600; margin-bottom: 6px; }
+textarea {
+  width: 100%; min-height: 84px; resize: vertical;
+  border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); color: var(--ink);
+  font: inherit; padding: 10px 12px;
+}
+textarea::placeholder { color: var(--muted); opacity: .8; }
+.r-note { margin: 0; white-space: pre-wrap; }
+
+main { overflow-x: clip; }
+.done-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.done-head > div:first-child { min-width: 0; }
+.stamp {
+  flex: none; margin-right: 4px;
+  font-family: var(--serif); font-weight: 600; font-size: .95rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); border: 3px solid var(--accent); border-radius: 8px; padding: 3px 8px;
+  transform: rotate(-12deg); opacity: .9;
+  animation: stamp .45s cubic-bezier(.2, 1.6, .4, 1) both .15s;
+}
+@keyframes stamp { from { transform: rotate(-12deg) scale(1.6); opacity: 0; } to { transform: rotate(-12deg) scale(1); opacity: .9; } }
+.done-title { font-size: clamp(1.55rem, 5vw, 2.1rem); text-align: left; margin-top: 6px; }
+.code { margin: 6px 0 0; color: var(--muted); }
+.code strong { color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.r-foot { margin: 0; text-align: center; color: var(--muted); font-size: .95rem; }
+.after { max-width: 620px; margin: 16px auto 0; display: flex; justify-content: center; }
+
+/* Bottom bar */
+.bar {
+  position: sticky; bottom: 0; z-index: 5; margin-top: 24px;
+  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-top: 1px solid var(--rule);
+}
+.bar-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+.bar-sum { flex: 1 1 100%; margin: 0; font-size: .9rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-sum strong { color: var(--ink); }
+@media (min-width: 600px) { .bar-sum { flex: 1 1 auto; font-size: .95rem; } }
+.btn {
+  min-height: 48px; border-radius: 999px; padding: 0 22px; font-weight: 600; font-size: 1rem;
+  border: 1px solid var(--rule); background: var(--sheet);
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); flex: 1 1 auto; }
+@media (min-width: 600px) { .btn.primary { flex: 0 0 auto; } }
+.btn.primary:disabled { background: var(--disabled); border-color: var(--disabled); }
+
+footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="checks" aria-hidden="true"></div>
+
+<header class="wrap top">
+  <p class="kicker">Su prenotazione · Tavolo unico</p>
+  <h1>Trattoria Fuoriorario</h1>
+  <p class="lede">Cucina aperta a qualunque ora. Tu scegli quando e cosa, lo chef si adegua.</p>
+  <div class="prova" id="prova" hidden>
+    <span><strong>Modalità prova.</strong> Le notifiche arrivano con l'etichetta [PROVA]. <span id="muto-lbl" hidden>Anzi no: con <code>?muto</code> non parte nessuna notifica.</span></span>
+    <button type="button" id="reset">Azzera tutto</button>
+  </div>
+</header>
+
+<nav class="wrap steps" id="steps" aria-label="Passi della prenotazione">
+  <ol>
+    <li><button type="button" data-go="0"><span>1</span>Quando</button></li>
+    <li><button type="button" data-go="1"><span>2</span>Menù</button></li>
+    <li><button type="button" data-go="2"><span>3</span>Riepilogo</button></li>
+  </ol>
+</nav>
+
+<main class="wrap">
+  <!-- 1. Quando -->
+  <section class="step" id="step-0" aria-labelledby="t0">
+    <h2 class="step-title" id="t0">Quando si cucina?</h2>
+    <p class="step-sub">Un giorno dal calendario e un'ora qualunque. Qualunque, davvero.</p>
+    <div class="when">
+      <div class="card">
+        <div class="cal-head">
+          <button type="button" class="round" id="prev" aria-label="Mese precedente">‹</button>
+          <h2 id="month" aria-live="polite"></h2>
+          <button type="button" class="round" id="next" aria-label="Mese successivo">›</button>
+        </div>
+        <div class="cal-dow" aria-hidden="true"><span>LUN</span><span>MAR</span><span>MER</span><span>GIO</span><span>VEN</span><span>SAB</span><span>DOM</span></div>
+        <div class="cal-grid" id="grid"></div>
+      </div>
+      <div class="card time">
+        <h2>Ora</h2>
+        <div class="clock" id="clock" aria-live="polite"></div>
+        <p class="hint">Le ore tratteggiate sono notturne. Prenotabili comunque.</p>
+        <h3 id="lbl-h">Ore</h3>
+        <div class="chips hours" id="hours" role="group" aria-labelledby="lbl-h"></div>
+        <h3 id="lbl-m">Minuti</h3>
+        <div class="chips minutes" id="minutes" role="group" aria-labelledby="lbl-m"></div>
+      </div>
+    </div>
+    <div class="chef" aria-live="polite"><p class="lbl">Nota dello chef</p><p class="txt" id="chef-0"></p></div>
+  </section>
+
+  <!-- 2. Menù -->
+  <section class="step" id="step-1" aria-labelledby="t1" hidden>
+    <h2 class="step-title" id="t1">Il menù</h2>
+    <p class="step-sub">Spunta tutto quello che ti va, anche più cose per portata. Nessun limite, salvo quello dello stomaco.</p>
+    <div class="menu" id="menu"></div>
+  </section>
+
+  <!-- 3. Riepilogo -->
+  <section class="step" id="step-2" aria-labelledby="t2" hidden>
+    <h2 class="step-title" id="t2">Riepilogo</h2>
+    <p class="step-sub">Controlla, aggiungi una nota se serve, poi conferma.</p>
+    <div class="receipt">
+      <p class="r-name">Trattoria Fuoriorario</p>
+      <p class="r-sub">Riepilogo prenotazione</p>
+      <hr class="r-sep">
+      <div class="r-block-head"><h3>Quando</h3><button type="button" class="edit" data-go="0">modifica</button></div>
+      <dl class="r-when" id="r-when"></dl>
+      <hr class="r-sep">
+      <div class="r-block-head"><h3>Menù</h3><button type="button" class="edit" data-go="1">modifica</button></div>
+      <dl id="r-menu"></dl>
+      <hr class="r-sep">
+      <label class="note-lbl" for="note">Note per lo chef <span style="font-weight:400;color:var(--muted)">(facoltative)</span></label>
+      <textarea id="note" maxlength="500" placeholder="Allergie, richieste, piatti che è meglio non provare a rifare…"></textarea>
+    </div>
+    <div class="chef" style="max-width:620px;margin-left:auto;margin-right:auto" aria-live="polite"><p class="lbl">Nota dello chef</p><p class="txt" id="chef-2"></p></div>
+  </section>
+
+  <!-- Confermato -->
+  <section class="step" id="step-3" aria-labelledby="t3" hidden>
+    <div class="receipt">
+      <div class="done-head">
+        <div>
+          <p class="r-sub" style="text-align:left">Trattoria Fuoriorario</p>
+          <h2 class="done-title" id="t3">Prenotazione confermata</h2>
+        </div>
+        <div class="stamp" aria-hidden="true">Confermato</div>
+      </div>
+      <p class="code">Codice <strong id="d-code"></strong> · Tavolo 1 (l'unico)</p>
+      <hr class="r-sep">
+      <dl class="r-when" id="d-when"></dl>
+      <hr class="r-sep">
+      <dl id="d-menu"></dl>
+      <div id="d-note-wrap" hidden><hr class="r-sep"><p class="note-lbl">Note per lo chef</p><p class="r-note" id="d-note"></p></div>
+      <hr class="r-sep">
+      <p class="r-foot">Lo chef è stato avvisato. Presentarsi con appetito: il dress code è facoltativo.</p>
+    </div>
+    <div class="after"><button type="button" class="btn" id="change">Cambia prenotazione</button></div>
+  </section>
+</main>
+
+<div class="bar" id="bar">
+  <div class="wrap bar-in">
+    <p class="bar-sum" id="sum"></p>
+    <button type="button" class="btn" id="back">Indietro</button>
+    <button type="button" class="btn primary" id="go"></button>
+  </div>
+</div>
+
+<footer class="wrap">Trattoria Fuoriorario · Coperti: 2 · Si accettano solo pagamenti in complimenti</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- Notifiche (ntfy.sh) ---------- */
+  // Iscriviti a questo canale nell'app ntfy per ricevere le notifiche.
+  const NTFY_URL = 'https://ntfy.sh/';
+  const NTFY_TOPIC = 'fuoriorario-957b1fa737a5072d';
+
+  /* ---------- Menù: sostituisci i segnaposto qui ---------- */
+  const MENU = [
+    { id: 'antipasti', titolo: 'Antipasti', nota: 'Per cominciare senza fretta.', piatti: [
+      { id: 'a1', nome: 'Antipasto 1', nota: 'Descrizione in arrivo' },
+      { id: 'a2', nome: 'Antipasto 2', nota: 'Descrizione in arrivo' },
+      { id: 'a3', nome: 'Antipasto 3', nota: 'Descrizione in arrivo' },
+    ]},
+    { id: 'primi', titolo: 'Primi', nota: 'Il centro della questione.', piatti: [
+      { id: 'p1', nome: 'Primo 1', nota: 'Descrizione in arrivo' },
+      { id: 'p2', nome: 'Primo 2', nota: 'Descrizione in arrivo' },
+      { id: 'p3', nome: 'Primo 3', nota: 'Descrizione in arrivo' },
+      { id: 'p4', nome: 'Primo 4', nota: 'Descrizione in arrivo' },
+    ]},
+    { id: 'secondi', titolo: 'Secondi', nota: 'Per chi ha ancora spazio.', piatti: [
+      { id: 's1', nome: 'Secondo 1', nota: 'Descrizione in arrivo' },
+      { id: 's2', nome: 'Secondo 2', nota: 'Descrizione in arrivo' },
+      { id: 's3', nome: 'Secondo 3', nota: 'Descrizione in arrivo' },
+    ]},
+    { id: 'dolci', titolo: 'Dolci', nota: 'Il dolce non si salta. Ma si può.', piatti: [
+      { id: 'd1', nome: 'Dolce 1', nota: 'Descrizione in arrivo' },
+      { id: 'd2', nome: 'Dolce 2', nota: 'Descrizione in arrivo' },
+      { id: 'd3', nome: 'Dolce 3', nota: 'Descrizione in arrivo' },
+    ]},
+    { id: 'vini', titolo: 'Vini', nota: 'Abbinamenti a discrezione dello chef, salvo obiezioni.', piatti: [
+      { id: 'v1', nome: 'Vino 1', nota: 'Rosso · da definire' },
+      { id: 'v2', nome: 'Vino 2', nota: 'Bianco · da definire' },
+      { id: 'v3', nome: 'Vino 3', nota: 'Bollicine · da definire' },
+      { id: 'v4', nome: 'Vino 4', nota: 'Rosato · da definire' },
+    ]},
+  ];
+
+  const params = new URLSearchParams(location.search);
+  const PROVA = params.has('prova') || params.has('muto');
+  const MUTO = params.has('muto');
+  const KEY = 'fuoriorario:v1' + (PROVA ? ':prova' : '');
+  const STEP_NAMES = ['Quando', 'Menù', 'Riepilogo', 'Confermato'];
+
+  const $ = (s) => document.querySelector(s);
+  const pad = (n) => String(n).padStart(2, '0');
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ids = new Set(MENU.flatMap((c) => c.piatti.map((p) => p.id)));
+
+  /* ---------- Stato ---------- */
+  function load() {
+    try { const s = JSON.parse(localStorage.getItem(KEY)); return s && typeof s === 'object' ? s : null; }
+    catch (e) { return null; }
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage non disponibile */ } }
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const parseISO = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+  const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  const S = Object.assign({ date: null, hour: null, minute: null, items: [], note: '', booked: null }, load() || {});
+  S.items = Array.isArray(S.items) ? S.items.filter((id) => ids.has(id)) : [];
+  if (S.booked && (!S.booked.date || parseISO(S.booked.date) < today)) S.booked = null;   // prenotazione già passata
+  if (S.date && parseISO(S.date) < today) S.date = null;
+  if (S.booked) Object.assign(S, { date: S.booked.date, hour: S.booked.hour, minute: S.booked.minute, items: S.booked.items.slice(), note: S.booked.note || '' });
+
+  /* ---------- Formati ---------- */
+  const fmtLong = new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const fmtMid = new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+  const fmtShort = new Intl.DateTimeFormat('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+  const fmtMonth = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' });
+  const timeOf = (s) => `${pad(s.hour)}:${pad(s.minute ?? 0)}`;
+  const whenOf = (s) => !s.date ? 'nessun giorno scelto'
+    : cap(fmtMid.format(parseISO(s.date))) + (s.hour != null ? `, ore ${timeOf(s)}` : ', ora da decidere');
+  const ready0 = () => !!S.date && S.hour != null;
+  const picked = (c, s = S) => c.piatti.filter((p) => s.items.includes(p.id)).map((p) => p.nome);
+  const menuLines = (s = S) => MENU.map((c) => `${c.titolo}: ${picked(c, s).join(', ') || '—'}`).join('\n');
+
+  /* ---------- Notifiche ---------- */
+  const ua = navigator.userAgent;
+  const device = /iPhone|Android.+Mobile|Mobile/i.test(ua) ? 'telefono' : /iPad|Android|Tablet/i.test(ua) ? 'tablet' : 'computer';
+  const clockNow = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+  function notify(title, message, { priority = 3, tags = [], beacon = false } = {}) {
+    const payload = { topic: NTFY_TOPIC, title: (PROVA ? '[PROVA] ' : '') + title, message, priority, tags };
+    if (MUTO) { console.info('[notifica muta]', payload); return; }
+    const body = JSON.stringify(payload);
+    try {
+      if (beacon && navigator.sendBeacon && navigator.sendBeacon(NTFY_URL, new Blob([body], { type: 'text/plain' }))) return;
+      fetch(NTFY_URL, { method: 'POST', body, keepalive: true }).catch(() => {});
+    } catch (e) { /* niente rete: pazienza */ }
+  }
+
+  const sent = { when: null, menu: null };
+  let interacted = false, leftSent = false;
+  const touch = () => { interacted = true; };
+
+  function sendWhen() {
+    const t = whenOf(S);
+    if (t === sent.when) return;
+    sent.when = t;
+    notify('Ha scelto quando', t, { priority: 2, tags: ['calendar'] });
+  }
+  function sendMenu() {
+    const m = menuLines();
+    if (m === sent.menu) return;
+    sent.menu = m;
+    notify('Ha scelto il menù', `${S.items.length} scelte\n${m}`, { priority: 2, tags: ['spaghetti'] });
+  }
+
+  /* ---------- Note dello chef ---------- */
+  function dayRemark() {
+    if (!S.date) return '';
+    const d = parseISO(S.date);
+    const diff = Math.round((d - today) / 864e5);
+    const wd = d.getDay();
+    if (diff === 0) return 'Oggi stesso: lo chef apprezza la fiducia e controlla cosa c\'è in frigo.';
+    if (diff === 1) return 'Domani: il tempo giusto per fare la spesa con calma.';
+    if (diff > 60) return 'Con largo anticipo: lo chef avrà tutto il tempo per allenarsi.';
+    if (wd === 0 || wd === 6) return 'Weekend: si cucina con calma e si lavano i piatti con ancora più calma.';
+    if (wd === 5) return 'Venerdì: la settimana si chiude a tavola.';
+    if (wd === 1) return 'Lunedì: scelta controcorrente. Il lunedì ringrazia.';
+    return 'Infrasettimanale: la cena che salva la settimana.';
+  }
+  function hourRemark() {
+    const h = S.hour;
+    if (h == null) return '';
+    if (h <= 4) return 'Cucina notturna: lo chef accende il fornello e finge di essere sveglio.';
+    if (h <= 8) return 'All\'alba? Colazione salata o cena molto tardiva, lo chef non giudica.';
+    if (h <= 10) return 'Colazione lunga: la moka è già d\'accordo.';
+    if (h === 11) return 'Brunch: parola che lo chef pronuncia solo se costretto.';
+    if (h <= 14) return 'Pranzo: orario da persone serie.';
+    if (h <= 17) return 'Merenda sostanziosa. Nessuno deve saperlo.';
+    if (h === 18) return 'Aperitivo che diventa cena: un classico.';
+    if (h <= 21) return 'Ora di cena. Lo chef approva senza riserve.';
+    return 'Cena tardi: si mangia quando si ha fame, non quando lo dice l\'orologio.';
+  }
+  function whenRemark() {
+    const r = [dayRemark(), hourRemark()].filter(Boolean).join(' ');
+    return r || 'Scegli un giorno e un\'ora: lo chef si adegua.';
+  }
+  function menuRemark() {
+    const n = S.items.length;
+    const count = (id) => picked(MENU.find((c) => c.id === id)).length;
+    if (n === 0) return 'Nessun piatto: si viene per la compagnia. E per il pane, immaginiamo.';
+    if (n === count('dolci')) return 'Solo dolce: approccio diretto, nessuna obiezione.';
+    if (n === count('vini')) return 'Solo vino: lo chef porterà comunque dei grissini.';
+    if (n >= 10) return 'Ordine ambizioso. Lo chef fa stretching.';
+    if (count('vini') === 0) return 'Niente vino: acqua frizzante, con dignità.';
+    if (count('dolci') === 0) return 'Nessun dolce: lo chef rispetta, ma tiene un cucchiaino da parte.';
+    return 'Scelte equilibrate. Lo chef prende appunti.';
+  }
+
+  /* ---------- Calendario ---------- */
+  const maxMonth = new Date(today.getFullYear(), today.getMonth() + 12, 1);
+  const view = S.date ? parseISO(S.date) : new Date(today);
+  view.setDate(1);
+
+  function renderCal() {
+    $('#month').textContent = cap(fmtMonth.format(view));
+    $('#prev').disabled = view.getFullYear() === today.getFullYear() && view.getMonth() === today.getMonth();
+    $('#next').disabled = view >= maxMonth;
+    const grid = $('#grid');
+    grid.textContent = '';
+    const offset = (view.getDay() + 6) % 7;
+    for (let i = 0; i < offset; i++) grid.appendChild(document.createElement('span'));
+    const days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(view.getFullYear(), view.getMonth(), d);
+      const iso = toISO(date);
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'day';
+      b.textContent = d;
+      b.dataset.date = iso;
+      b.setAttribute('aria-label', cap(fmtLong.format(date)));
+      b.setAttribute('aria-pressed', String(S.date === iso));
+      if (date < today) b.disabled = true;
+      if (+date === +today) b.classList.add('today');
+      if (date.getDay() === 0 || date.getDay() === 6) b.classList.add('weekend');
+      grid.appendChild(b);
+    }
+  }
+  $('#grid').addEventListener('click', (e) => {
+    const b = e.target.closest('.day');
+    if (!b || b.disabled) return;
+    S.date = b.dataset.date; touch(); save();
+    renderCal(); renderWhen(); renderBar();
+  });
+  $('#prev').addEventListener('click', () => { view.setMonth(view.getMonth() - 1); renderCal(); });
+  $('#next').addEventListener('click', () => { view.setMonth(view.getMonth() + 1); renderCal(); });
+
+  /* ---------- Ora ---------- */
+  const hoursEl = $('#hours'), minsEl = $('#minutes');
+  for (let h = 0; h < 24; h++) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip' + (h <= 5 ? ' night' : ''); b.dataset.h = h; b.textContent = pad(h);
+    b.setAttribute('aria-label', `ore ${h}`);
+    hoursEl.appendChild(b);
+  }
+  [0, 15, 30, 45].forEach((m) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.dataset.m = m; b.textContent = ':' + pad(m);
+    b.setAttribute('aria-label', `${m} minuti`);
+    minsEl.appendChild(b);
+  });
+  hoursEl.addEventListener('click', (e) => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    S.hour = +b.dataset.h; if (S.minute == null) S.minute = 0;
+    touch(); save(); renderWhen(); renderBar();
+  });
+  minsEl.addEventListener('click', (e) => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    S.minute = +b.dataset.m;
+    touch(); save(); renderWhen(); renderBar();
+  });
+
+  function renderWhen() {
+    hoursEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.h === S.hour)));
+    minsEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.m === S.minute)));
+    const hh = S.hour == null ? '<span class="dim">--</span>' : pad(S.hour);
+    const mm = S.minute == null ? '<span class="dim">--</span>' : pad(S.minute);
+    $('#clock').innerHTML = `${hh}:${mm}`;
+    $('#chef-0').textContent = whenRemark();
+  }
+
+  /* ---------- Menù ---------- */
+  const menuEl = $('#menu');
+  MENU.forEach((c) => {
+    const card = document.createElement('div');
+    card.className = 'card course';
+    card.setAttribute('role', 'group');
+    card.setAttribute('aria-labelledby', 'c-' + c.id);
+    const head = document.createElement('div');
+    head.className = 'course-head';
+    const h = document.createElement('h2'); h.id = 'c-' + c.id; h.textContent = c.titolo;
+    const cnt = document.createElement('span'); cnt.className = 'count'; cnt.dataset.count = c.id;
+    head.append(h, cnt);
+    const note = document.createElement('p'); note.className = 'course-note'; note.textContent = c.nota;
+    const items = document.createElement('div'); items.className = 'items';
+    c.piatti.forEach((p) => {
+      const label = document.createElement('label'); label.className = 'item';
+      const input = document.createElement('input'); input.type = 'checkbox'; input.value = p.id;
+      const txt = document.createElement('span');
+      const b = document.createElement('b'); b.textContent = p.nome;
+      const sm = document.createElement('small'); sm.textContent = p.nota;
+      txt.append(b, sm); label.append(input, txt); items.appendChild(label);
+    });
+    card.append(head, note, items);
+    menuEl.appendChild(card);
+  });
+  menuEl.addEventListener('change', (e) => {
+    const input = e.target;
+    if (input.type !== 'checkbox') return;
+    S.items = S.items.filter((id) => id !== input.value);
+    if (input.checked) S.items.push(input.value);
+    touch(); save(); renderMenu(); renderBar();
+  });
+  function renderMenu() {
+    menuEl.querySelectorAll('input[type=checkbox]').forEach((i) => {
+      i.checked = S.items.includes(i.value);
+      i.closest('.item').classList.toggle('on', i.checked);
+    });
+    MENU.forEach((c) => {
+      const n = picked(c).length;
+      const el = menuEl.querySelector(`[data-count="${c.id}"]`);
+      el.textContent = n ? `${n} ${n === 1 ? 'scelto' : 'scelti'}` : 'nessuna scelta';
+      el.classList.toggle('on', n > 0);
+    });
+  }
+
+  /* ---------- Riepilogo e conferma ---------- */
+  function fillWhen(dl, s) {
+    dl.textContent = '';
+    const rows = [
+      ['Giorno', cap(fmtLong.format(parseISO(s.date))), 'wide'],
+      ['Ora', timeOf(s)],
+      ['Coperti', '2'],
+      ['Tavolo', 'Il solito'],
+    ];
+    rows.forEach(([k, v, cls]) => {
+      const div = document.createElement('div'); if (cls) div.className = cls;
+      const dt = document.createElement('dt'); dt.textContent = k;
+      const dd = document.createElement('dd'); dd.textContent = v;
+      div.append(dt, dd); dl.appendChild(div);
+    });
+  }
+  function fillMenu(dl, s) {
+    dl.textContent = '';
+    MENU.forEach((c) => {
+      const div = document.createElement('div'); div.className = 'r-course';
+      const dt = document.createElement('dt'); dt.textContent = c.titolo;
+      const dd = document.createElement('dd');
+      const p = picked(c, s);
+      dd.textContent = p.length ? p.join(', ') : 'nessuno';
+      if (!p.length) dd.className = 'none';
+      div.append(dt, dd); dl.appendChild(div);
+    });
+  }
+  const noteEl = $('#note');
+  noteEl.addEventListener('input', () => { S.note = noteEl.value; touch(); save(); });
+
+  function renderRecap() {
+    fillWhen($('#r-when'), S);
+    fillMenu($('#r-menu'), S);
+    noteEl.value = S.note || '';
+    $('#chef-2').textContent = menuRemark();
+  }
+  function renderDone() {
+    const b = S.booked;
+    $('#d-code').textContent = b.code;
+    $('#t3').textContent = b.volte > 1 ? 'Prenotazione aggiornata' : 'Prenotazione confermata';
+    fillWhen($('#d-when'), b);
+    fillMenu($('#d-menu'), b);
+    $('#d-note-wrap').hidden = !b.note;
+    $('#d-note').textContent = b.note || '';
+  }
+
+  function confirmBooking() {
+    S.note = noteEl.value.trim();
+    const again = !!S.booked;
+    const d = parseISO(S.date);
+    S.booked = {
+      code: `FO-${pad(d.getDate())}${pad(d.getMonth() + 1)}-${pad(S.hour)}${pad(S.minute ?? 0)}`,
+      at: Date.now(), volte: (S.booked?.volte || 0) + 1,
+      date: S.date, hour: S.hour, minute: S.minute ?? 0, items: S.items.slice(), note: S.note,
+    };
+    save();
+    interacted = false;
+    const msg = `${cap(fmtLong.format(d))}, ore ${timeOf(S)}\n\n${menuLines()}`
+      + (S.note ? `\n\nNote: ${S.note}` : '') + `\n\nCodice ${S.booked.code}`;
+    notify(again ? 'Prenotazione modificata' : 'Prenotazione confermata!', msg, { priority: 4, tags: ['white_check_mark', 'fork_and_knife'] });
+    show(3);
+  }
+
+  /* ---------- Navigazione ---------- */
+  let step = 0;
+  const sections = [0, 1, 2, 3].map((i) => $('#step-' + i));
+  const stepBtns = [...document.querySelectorAll('#steps [data-go]')];
+  const maxStep = () => (ready0() ? 2 : 0);
+
+  function show(n, scroll = true) {
+    step = n;
+    sections.forEach((el, i) => { el.hidden = i !== n; });
+    if (n === 0) { renderCal(); renderWhen(); }
+    if (n === 1) renderMenu();
+    if (n === 2) renderRecap();
+    if (n === 3) renderDone();
+    $('#steps').hidden = n === 3;
+    stepBtns.forEach((b) => {
+      const i = +b.dataset.go;
+      b.disabled = i > maxStep();
+      if (i === n) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
+    renderBar();
+    if (scroll) {
+      const anchor = n === 3 ? sections[3] : $('#steps');
+      const y = anchor.getBoundingClientRect().top + scrollY - 10;
+      if (scrollY > y || n === 3) scrollTo({ top: Math.max(0, y), behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+  }
+  function goTo(target) {
+    if (target > maxStep()) return;
+    if (step === 0 && target >= 1) sendWhen();
+    if (step <= 1 && target === 2) sendMenu();
+    show(target);
+  }
+
+  const sum = $('#sum'), back = $('#back'), go = $('#go');
+  function renderBar() {
+    $('#bar').hidden = step === 3;
+    back.hidden = step === 0;
+    const n = S.items.length;
+    const shortWhen = ready0() ? `<strong>${cap(fmtShort.format(parseISO(S.date)))} · ${timeOf(S)}</strong>` : '';
+    if (step === 0) {
+      sum.innerHTML = ready0() ? shortWhen : S.date ? 'Manca l\'ora' : S.hour != null ? 'Manca il giorno' : 'Scegli giorno e ora';
+      go.textContent = 'Avanti: il menù';
+      go.disabled = !ready0();
+    } else if (step === 1) {
+      sum.innerHTML = `${shortWhen} · ${n ? `${n} ${n === 1 ? 'scelta' : 'scelte'}` : 'nessuna scelta, per ora'}`;
+      go.textContent = 'Avanti: riepilogo';
+      go.disabled = false;
+    } else if (step === 2) {
+      sum.innerHTML = `${shortWhen} · ${n} ${n === 1 ? 'scelta' : 'scelte'}`;
+      go.textContent = S.booked ? 'Conferma le modifiche' : 'Conferma prenotazione';
+      go.disabled = !ready0();
+    }
+  }
+  go.addEventListener('click', () => {
+    if (step === 0) goTo(1);
+    else if (step === 1) goTo(2);
+    else if (step === 2 && ready0()) confirmBooking();
+  });
+  back.addEventListener('click', () => show(Math.max(0, step - 1)));
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-go]');
+    if (b && !b.disabled) goTo(+b.dataset.go);
+  });
+  $('#change').addEventListener('click', () => {
+    notify('Sta cambiando la prenotazione', `Prenotazione attuale: ${whenOf(S.booked)} (${S.booked.code}).`, { priority: 2, tags: ['pencil2'] });
+    show(0);
+  });
+
+  /* ---------- Uscita senza prenotare ---------- */
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'hidden' || leftSent || !interacted || step === 3) return;
+    leftSent = true;
+    const title = S.booked ? 'Ha lasciato le modifiche a metà' : 'Ha lasciato la pagina senza prenotare';
+    const msg = `Era al passo «${STEP_NAMES[step]}». Finora: ${whenOf(S)}.` + (S.items.length ? `\n${menuLines()}` : '');
+    notify(title, msg, { priority: 2, tags: ['door'], beacon: true });
+  });
+
+  /* ---------- Avvio ---------- */
+  if (PROVA) {
+    $('#prova').hidden = false;
+    $('#muto-lbl').hidden = !MUTO;
+    $('#reset').addEventListener('click', () => {
+      try { localStorage.removeItem(KEY); } catch (e) { /* ignora */ }
+      location.reload();
+    });
+  }
+  notify('Ha aperto il sito',
+    `Da ${device}, alle ${clockNow()}.`
+      + (S.booked ? ` Ha già prenotato: ${whenOf(S.booked)}.` : S.date || S.items.length ? ` Riparte da: ${whenOf(S)}.` : ''),
+    { priority: 3, tags: ['eyes'] });
+
+  show(S.booked ? 3 : 0, false);
+})();
+</script>
+</body>
+</html>
