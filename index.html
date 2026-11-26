@@ -198,10 +198,9 @@ main { flex: 1; }
 
 /* Step 2: menu */
 .menu { display: grid; gap: 16px; }
-.course-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.course-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .count { font-size: .85rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
 .count.on { color: var(--accent); }
-.course-note { margin: 2px 0 12px; color: var(--muted); font-size: .95rem; }
 .items { display: grid; gap: 8px; }
 @media (min-width: 640px) { .items { grid-template-columns: 1fr 1fr; } }
 .item {
@@ -246,7 +245,8 @@ main { flex: 1; }
 .r-course { display: grid; grid-template-columns: 6.5em 1fr; gap: 2px 12px; padding: 7px 0; border-bottom: 1px dotted var(--rule); }
 .r-course:last-child { border-bottom: 0; }
 .r-course dt { color: var(--muted); font-size: .92rem; }
-.r-course dd { margin: 0; font-weight: 500; }
+.r-course dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+textarea.libero { min-height: 0; }
 .r-course dd.none { color: var(--disabled); font-weight: 400; }
 .note-lbl { display: block; font-weight: 600; margin-bottom: 6px; }
 textarea {
@@ -416,34 +416,31 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   const NTFY_URL = 'https://ntfy.sh/';
   const NTFY_TOPIC = 'fuoriorario-957b1fa737a5072d';
 
-  /* ---------- Menù: sostituisci i segnaposto qui ---------- */
+  /* ---------- Menù ----------
+     Piatti a scelta multipla: { id, nome, nota? }. L'id deve restare fisso e unico (è quello che si salva).
+     Portata con libero: true → niente piatti, al posto delle caselle c'è un campo di testo. */
   const MENU = [
-    { id: 'antipasti', titolo: 'Antipasti', nota: 'Per cominciare senza fretta.', piatti: [
-      { id: 'a1', nome: 'Antipasto 1', nota: 'Descrizione in arrivo' },
-      { id: 'a2', nome: 'Antipasto 2', nota: 'Descrizione in arrivo' },
-      { id: 'a3', nome: 'Antipasto 3', nota: 'Descrizione in arrivo' },
+    { id: 'antipasti', titolo: 'Antipasti', piatti: [
+      { id: 'a-alici', nome: 'Pane, Burro e Alici' },
+      { id: 'a-zuppetta', nome: 'Zuppetta di Pesce con Crostini' },
+      { id: 'a-nigiri', nome: 'Nigiri di Salmone' },
     ]},
-    { id: 'primi', titolo: 'Primi', nota: 'Il centro della questione.', piatti: [
-      { id: 'p1', nome: 'Primo 1', nota: 'Descrizione in arrivo' },
-      { id: 'p2', nome: 'Primo 2', nota: 'Descrizione in arrivo' },
-      { id: 'p3', nome: 'Primo 3', nota: 'Descrizione in arrivo' },
-      { id: 'p4', nome: 'Primo 4', nota: 'Descrizione in arrivo' },
+    { id: 'primi', titolo: 'Primi', piatti: [
+      { id: 'p-calamarata', nome: 'Calamarata' },
+      { id: 'p-vongole', nome: 'Spaghetti alle vongole' },
+      { id: 'p-ravioli', nome: 'Ravioli di Pesce al Nero di Seppia, Burro e Limone', nota: 'I ravioli li compriamo già fatti' },
     ]},
-    { id: 'secondi', titolo: 'Secondi', nota: 'Per chi ha ancora spazio.', piatti: [
-      { id: 's1', nome: 'Secondo 1', nota: 'Descrizione in arrivo' },
-      { id: 's2', nome: 'Secondo 2', nota: 'Descrizione in arrivo' },
-      { id: 's3', nome: 'Secondo 3', nota: 'Descrizione in arrivo' },
+    { id: 'secondi', titolo: 'Secondi', piatti: [
+      { id: 's-salmone', nome: 'Trancio di Salmone e Purè' },
+      { id: 's-polpette', nome: 'Polpette di Pesce e Spinacini' },
+      { id: 's-orata', nome: 'Orata in Padella e Pomodorini' },
     ]},
-    { id: 'dolci', titolo: 'Dolci', nota: 'Il dolce non si salta. Ma si può.', piatti: [
-      { id: 'd1', nome: 'Dolce 1', nota: 'Descrizione in arrivo' },
-      { id: 'd2', nome: 'Dolce 2', nota: 'Descrizione in arrivo' },
-      { id: 'd3', nome: 'Dolce 3', nota: 'Descrizione in arrivo' },
-    ]},
-    { id: 'vini', titolo: 'Vini', nota: 'Abbinamenti a discrezione dello chef, salvo obiezioni.', piatti: [
-      { id: 'v1', nome: 'Vino 1', nota: 'Rosso · da definire' },
-      { id: 'v2', nome: 'Vino 2', nota: 'Bianco · da definire' },
-      { id: 'v3', nome: 'Vino 3', nota: 'Bollicine · da definire' },
-      { id: 'v4', nome: 'Vino 4', nota: 'Rosato · da definire' },
+    { id: 'dolci', titolo: 'Dolci', libero: true, placeholder: 'Scrivi il dolce che ti va' },
+    { id: 'vini', titolo: 'Vini', piatti: [
+      { id: 'v-saten-1', nome: 'Franciacorta Satèn' },
+      { id: 'v-saten-2', nome: 'Franciacorta Satèn' },
+      { id: 'v-saten-3', nome: 'Franciacorta Satèn' },
+      { id: 'v-saten-4', nome: 'Franciacorta Satèn' },
     ]},
   ];
 
@@ -468,7 +465,9 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   const pad = (n) => String(n).padStart(2, '0');
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ids = new Set(MENU.flatMap((c) => c.piatti.map((p) => p.id)));
+  const ids = new Set(MENU.flatMap((c) => (c.piatti || []).map((p) => p.id)));
+  const liberi = MENU.filter((c) => c.libero).map((c) => c.id);
+  const cleanTesti = (t) => Object.fromEntries(liberi.map((id) => [id, typeof t?.[id] === 'string' ? t[id] : '']));
 
   /* ---------- Stato ---------- */
   function load() {
@@ -509,11 +508,12 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   const festaInfo = (iso) => (iso ? feste(+iso.slice(0, 4)).get(iso) : undefined);
   const festa = (iso) => festaInfo(iso)?.nome || '';
 
-  const S = Object.assign({ date: null, hour: null, minute: null, items: [], note: '', booked: null }, load() || {});
+  const S = Object.assign({ date: null, hour: null, minute: null, items: [], testi: {}, note: '', booked: null }, load() || {});
   S.items = Array.isArray(S.items) ? S.items.filter((id) => ids.has(id)) : [];
+  S.testi = cleanTesti(S.testi);
   if (S.booked && (!S.booked.date || parseISO(S.booked.date) < today)) S.booked = null;   // prenotazione già passata
   if (S.date && parseISO(S.date) < today) S.date = null;
-  if (S.booked) Object.assign(S, { date: S.booked.date, hour: S.booked.hour, minute: S.booked.minute, items: S.booked.items.slice(), note: S.booked.note || '' });
+  if (S.booked) Object.assign(S, { date: S.booked.date, hour: S.booked.hour, minute: S.booked.minute, items: S.booked.items.filter((id) => ids.has(id)), testi: cleanTesti(S.booked.testi), note: S.booked.note || '' });
   const slotOk = (h, m) => Object.values(SLOTS).some((list) => list.some(([sh, sm]) => sh === h && sm === m));
   if (!slotOk(S.hour, S.minute)) { S.hour = null; S.minute = null; }   // orario non più prenotabile
 
@@ -527,7 +527,10 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     : cap(fmtMid.format(parseISO(s.date))) + (festa(s.date) ? ` (${festa(s.date)})` : '')
       + (s.hour != null ? `, ore ${timeOf(s)}` : ', ora da decidere');
   const ready0 = () => !!S.date && S.hour != null;
-  const picked = (c, s = S) => c.piatti.filter((p) => s.items.includes(p.id)).map((p) => p.nome);
+  const picked = (c, s = S) => c.libero
+    ? [(s.testi?.[c.id] || '').trim()].filter(Boolean)
+    : c.piatti.filter((p) => s.items.includes(p.id)).map((p) => p.nome);
+  const countOf = (s = S) => MENU.reduce((n, c) => n + picked(c, s).length, 0);
   const menuLines = (s = S) => MENU.map((c) => `${c.titolo}: ${picked(c, s).join(', ') || '—'}`).join('\n');
 
   /* ---------- Notifiche ---------- */
@@ -559,7 +562,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     const m = menuLines();
     if (m === sent.menu) return;
     sent.menu = m;
-    notify('Ha scelto il menù', `${S.items.length} scelte\n${m}`, { priority: 2, tags: ['spaghetti'] });
+    notify('Ha scelto il menù', `${countOf()} scelte\n${m}`, { priority: 2, tags: ['spaghetti'] });
   }
 
 
@@ -654,17 +657,25 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     const h = document.createElement('h2'); h.id = 'c-' + c.id; h.textContent = c.titolo;
     const cnt = document.createElement('span'); cnt.className = 'count'; cnt.dataset.count = c.id;
     head.append(h, cnt);
-    const note = document.createElement('p'); note.className = 'course-note'; note.textContent = c.nota;
+    if (c.libero) {
+      const ta = document.createElement('textarea');
+      ta.className = 'libero'; ta.dataset.libero = c.id; ta.rows = 2; ta.maxLength = 200;
+      ta.placeholder = c.placeholder || ''; ta.setAttribute('aria-labelledby', 'c-' + c.id);
+      card.append(head, ta);
+      menuEl.appendChild(card);
+      return;
+    }
     const items = document.createElement('div'); items.className = 'items';
     c.piatti.forEach((p) => {
       const label = document.createElement('label'); label.className = 'item';
       const input = document.createElement('input'); input.type = 'checkbox'; input.value = p.id;
       const txt = document.createElement('span');
       const b = document.createElement('b'); b.textContent = p.nome;
-      const sm = document.createElement('small'); sm.textContent = p.nota;
-      txt.append(b, sm); label.append(input, txt); items.appendChild(label);
+      txt.append(b);
+      if (p.nota) { const sm = document.createElement('small'); sm.textContent = p.nota; txt.append(sm); }   // descrizione facoltativa
+      label.append(input, txt); items.appendChild(label);
     });
-    card.append(head, note, items);
+    card.append(head, items);
     menuEl.appendChild(card);
   });
   menuEl.addEventListener('change', (e) => {
@@ -674,15 +685,25 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     if (input.checked) S.items.push(input.value);
     touch(); save(); renderMenu(); renderBar();
   });
+  menuEl.addEventListener('input', (e) => {
+    const ta = e.target.closest('[data-libero]');
+    if (!ta) return;
+    S.testi[ta.dataset.libero] = ta.value;
+    touch(); save(); renderMenu(); renderBar();
+  });
   function renderMenu() {
     menuEl.querySelectorAll('input[type=checkbox]').forEach((i) => {
       i.checked = S.items.includes(i.value);
       i.closest('.item').classList.toggle('on', i.checked);
     });
+    menuEl.querySelectorAll('[data-libero]').forEach((ta) => {
+      const v = S.testi[ta.dataset.libero] || '';
+      if (ta.value !== v) ta.value = v;
+    });
     MENU.forEach((c) => {
       const n = picked(c).length;
       const el = menuEl.querySelector(`[data-count="${c.id}"]`);
-      el.textContent = n ? `${n} ${n === 1 ? 'scelto' : 'scelti'}` : 'nessuna scelta';
+      el.textContent = !n ? 'nessuna scelta' : c.libero ? 'scelto' : `${n} ${n === 1 ? 'scelto' : 'scelti'}`;
       el.classList.toggle('on', n > 0);
     });
   }
@@ -740,7 +761,8 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     S.booked = {
       code: `FO-${pad(d.getDate())}${pad(d.getMonth() + 1)}-${pad(S.hour)}${pad(S.minute ?? 0)}`,
       at: Date.now(), volte: (S.booked?.volte || 0) + 1,
-      date: S.date, hour: S.hour, minute: S.minute ?? 0, items: S.items.slice(), note: S.note,
+      date: S.date, hour: S.hour, minute: S.minute ?? 0, items: S.items.slice(),
+      testi: Object.fromEntries(Object.entries(S.testi).map(([k, v]) => [k, v.trim()])), note: S.note,
     };
     save();
     interacted = false;
@@ -787,7 +809,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   function renderBar() {
     $('#bar').hidden = step === 3;
     back.hidden = step === 0;
-    const n = S.items.length;
+    const n = countOf();
     const shortWhen = ready0() ? `<strong>${cap(fmtShort.format(parseISO(S.date)))} · ${timeOf(S)}</strong>` : '';
     if (step === 0) {
       sum.innerHTML = ready0() ? shortWhen : S.date ? 'Manca l\'ora' : S.hour != null ? 'Manca il giorno' : 'Scegli giorno e ora';
@@ -823,7 +845,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     if (document.visibilityState !== 'hidden' || leftSent || !interacted || step === 3) return;
     leftSent = true;
     const title = S.booked ? 'Ha lasciato le modifiche a metà' : 'Ha lasciato la pagina senza prenotare';
-    const msg = `Era al passo «${STEP_NAMES[step]}». Finora: ${whenOf(S)}.` + (S.items.length ? `\n${menuLines()}` : '');
+    const msg = `Era al passo «${STEP_NAMES[step]}». Finora: ${whenOf(S)}.` + (countOf() ? `\n${menuLines()}` : '');
     notify(title, msg, { priority: 2, tags: ['door'], beacon: true });
   });
 
@@ -838,7 +860,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   }
   notify('Ha aperto il sito',
     `Da ${device}, alle ${clockNow()}.`
-      + (S.booked ? ` Ha già prenotato: ${whenOf(S.booked)}.` : S.date || S.items.length ? ` Riparte da: ${whenOf(S)}.` : ''),
+      + (S.booked ? ` Ha già prenotato: ${whenOf(S.booked)}.` : S.date || countOf() ? ` Riparte da: ${whenOf(S)}.` : ''),
     { priority: 3, tags: ['eyes'] });
 
   show(S.booked ? 3 : 0, false);
