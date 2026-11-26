@@ -30,6 +30,8 @@
   --olive-soft: #e5e9d7;
   --disabled: #bdb2a4;
   --prova: #f3e2a6;
+  --festa-bg: #f5e2a8;
+  --festa-edge: #d4ab3f;
   --shadow: 0 1px 0 rgba(43, 35, 29, .05), 0 10px 28px -16px rgba(43, 35, 29, .35);
   --serif: "Fraunces", Georgia, "Times New Roman", serif;
   --sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -49,6 +51,8 @@
     --olive-soft: #343a26;
     --disabled: #5f574e;
     --prova: #4d4220;
+    --festa-bg: #4a3e1a;
+    --festa-edge: #8f7631;
     --shadow: 0 1px 0 rgba(0, 0, 0, .2), 0 10px 28px -16px rgba(0, 0, 0, .7);
     color-scheme: dark;
   }
@@ -88,6 +92,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 600; margin: 0; line-height
 }
 .top h1 { font-size: clamp(2.1rem, 7vw, 3.4rem); letter-spacing: -.01em; }
 .lede { margin: 10px 0 0; max-width: 34em; color: var(--muted); font-size: 1.05rem; }
+.lede strong { color: var(--ink); font-weight: 600; }
 
 .prova {
   margin-top: 14px; padding: 10px 14px; border-radius: 12px;
@@ -153,7 +158,12 @@ main { flex: 1; }
   content: "oggi"; position: absolute; left: 0; right: 0; bottom: 3px;
   font-size: .58rem; font-weight: 600; letter-spacing: .04em; color: var(--olive);
 }
-.day[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) !important; border-color: var(--accent); }
+.day.festa:not(:disabled) { background: var(--festa-bg); color: var(--accent); }
+.day.festa:not(:disabled):hover { background: var(--accent-soft); }
+.day[aria-pressed="true"] { background: var(--accent) !important; color: var(--accent-ink) !important; border-color: var(--accent); }
+.cal-legend { display: flex; gap: 8px; align-items: baseline; margin: 12px 0 0; font-size: .85rem; color: var(--muted); }
+.cal-legend strong { color: var(--ink); font-weight: 600; }
+.swatch { flex: none; width: 12px; height: 12px; border-radius: 4px; background: var(--festa-bg); border: 1px solid var(--festa-edge); transform: translateY(1px); }
 .day[aria-pressed="true"].today::after { color: var(--accent-ink); }
 .day:disabled { color: var(--disabled); }
 
@@ -171,14 +181,6 @@ main { flex: 1; }
 .chip:hover { border-color: var(--accent); }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
-/* Chef's note */
-.chef {
-  margin-top: 16px; padding: 14px 16px; border-radius: 14px;
-  background: var(--olive-soft); border-left: 4px solid var(--olive);
-}
-.chef p { margin: 0; }
-.chef .lbl { font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--olive); margin-bottom: 4px; }
-.chef .txt { font-family: var(--serif); font-style: italic; font-size: 1.08rem; line-height: 1.4; }
 
 /* Step 2: menu */
 .menu { display: grid; gap: 16px; }
@@ -290,7 +292,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
 <header class="wrap top">
   <p class="kicker">Su prenotazione · Tavolo unico</p>
   <h1>Trattoria Fuoriorario</h1>
-  <p class="lede">Tu scegli quando e cosa, lo chef si adegua.</p>
+  <p class="lede"><strong>Zero stress – Solo good vibes</strong><br>Tu scegli quando e cosa, e poi lo cuciniamo insieme</p>
   <div class="prova" id="prova" hidden>
     <span><strong>Modalità prova.</strong> Le notifiche arrivano con l'etichetta [PROVA]. <span id="muto-lbl" hidden>Anzi no: con <code>?muto</code> non parte nessuna notifica.</span></span>
     <button type="button" id="reset">Azzera tutto</button>
@@ -319,6 +321,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
         </div>
         <div class="cal-dow" aria-hidden="true"><span>LUN</span><span>MAR</span><span>MER</span><span>GIO</span><span>VEN</span><span>SAB</span><span>DOM</span></div>
         <div class="cal-grid" id="grid"></div>
+        <p class="cal-legend"><span class="swatch" aria-hidden="true"></span><span><strong>Festività:</strong> <span id="feste-list"></span></span></p>
       </div>
       <div class="card time">
         <h2>Ora</h2>
@@ -329,7 +332,6 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
         <div class="chips" id="slots-cena" role="group" aria-labelledby="lbl-cena"></div>
       </div>
     </div>
-    <div class="chef" aria-live="polite"><p class="lbl">Nota dello chef</p><p class="txt" id="chef-0"></p></div>
   </section>
 
   <!-- 2. Menù -->
@@ -356,7 +358,6 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
       <label class="note-lbl" for="note">Note per lo chef <span style="font-weight:400;color:var(--muted)">(facoltative)</span></label>
       <textarea id="note" maxlength="500" placeholder="Allergie, richieste, piatti che è meglio non provare a rifare…"></textarea>
     </div>
-    <div class="chef" style="max-width:620px;margin-left:auto;margin-right:auto" aria-live="polite"><p class="lbl">Nota dello chef</p><p class="txt" id="chef-2"></p></div>
   </section>
 
   <!-- Confermato -->
@@ -466,6 +467,29 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   const parseISO = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
   const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
+  /* ---------- Festività nazionali (Pasqua calcolata; 4 ottobre festa dal 2026, L. 151/2025) ---------- */
+  function pasqua(y) {   // computus gregoriano
+    const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
+    const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const n = h + l - 7 * m + 114;
+    return new Date(y, Math.floor(n / 31) - 1, (n % 31) + 1);
+  }
+  const festeCache = {};
+  function feste(y) {
+    if (festeCache[y]) return festeCache[y];
+    const map = new Map(Object.entries({
+      '01-01': 'Capodanno', '01-06': 'Epifania', '04-25': 'Festa della Liberazione', '05-01': 'Festa dei Lavoratori',
+      '06-02': 'Festa della Repubblica', '08-15': 'Ferragosto', '10-04': 'San Francesco', '11-01': 'Ognissanti',
+      '12-08': 'Immacolata', '12-25': 'Natale', '12-26': 'Santo Stefano',
+    }).map(([md, name]) => [`${y}-${md}`, name]));
+    const e = pasqua(y), lun = new Date(y, e.getMonth(), e.getDate() + 1);
+    map.set(toISO(e), 'Pasqua');
+    map.set(toISO(lun), 'Pasquetta');
+    return (festeCache[y] = map);
+  }
+  const festa = (iso) => (iso ? feste(+iso.slice(0, 4)).get(iso) || '' : '');
+
   const S = Object.assign({ date: null, hour: null, minute: null, items: [], note: '', booked: null }, load() || {});
   S.items = Array.isArray(S.items) ? S.items.filter((id) => ids.has(id)) : [];
   if (S.booked && (!S.booked.date || parseISO(S.booked.date) < today)) S.booked = null;   // prenotazione già passata
@@ -481,7 +505,8 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   const fmtMonth = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' });
   const timeOf = (s) => `${pad(s.hour)}:${pad(s.minute ?? 0)}`;
   const whenOf = (s) => !s.date ? 'nessun giorno scelto'
-    : cap(fmtMid.format(parseISO(s.date))) + (s.hour != null ? `, ore ${timeOf(s)}` : ', ora da decidere');
+    : cap(fmtMid.format(parseISO(s.date))) + (festa(s.date) ? ` (${festa(s.date)})` : '')
+      + (s.hour != null ? `, ore ${timeOf(s)}` : ', ora da decidere');
   const ready0 = () => !!S.date && S.hour != null;
   const picked = (c, s = S) => c.piatti.filter((p) => s.items.includes(p.id)).map((p) => p.nome);
   const menuLines = (s = S) => MENU.map((c) => `${c.titolo}: ${picked(c, s).join(', ') || '—'}`).join('\n');
@@ -518,22 +543,6 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     notify('Ha scelto il menù', `${S.items.length} scelte\n${m}`, { priority: 2, tags: ['spaghetti'] });
   }
 
-  /* ---------- Note dello chef ---------- */
-  function whenRemark() {
-    if (S.hour == null) return 'Scegli un giorno e un orario: lo chef si adegua.';
-    return S.hour < 17 ? 'Pranzo: orario da persone serie.' : 'Ora di cena. Lo chef approva senza riserve.';
-  }
-  function menuRemark() {
-    const n = S.items.length;
-    const count = (id) => picked(MENU.find((c) => c.id === id)).length;
-    if (n === 0) return 'Nessun piatto: si viene per la compagnia. E per il pane, immaginiamo.';
-    if (n === count('dolci')) return 'Solo dolce: approccio diretto, nessuna obiezione.';
-    if (n === count('vini')) return 'Solo vino: lo chef porterà comunque dei grissini.';
-    if (n >= 10) return 'Ordine ambizioso. Lo chef fa stretching.';
-    if (count('vini') === 0) return 'Niente vino: acqua frizzante, con dignità.';
-    if (count('dolci') === 0) return 'Nessun dolce: lo chef rispetta, ma tiene un cucchiaino da parte.';
-    return 'Scelte equilibrate. Lo chef prende appunti.';
-  }
 
   /* ---------- Calendario ---------- */
   const maxMonth = new Date(today.getFullYear(), today.getMonth() + 12, 1);
@@ -562,8 +571,20 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
       if (date < today) b.disabled = true;
       if (+date === +today) b.classList.add('today');
       if (date.getDay() === 0 || date.getDay() === 6) b.classList.add('weekend');
+      const f = festa(iso);
+      if (f) {
+        b.classList.add('festa');
+        b.title = f;
+        b.setAttribute('aria-label', `${cap(fmtLong.format(date))}, ${f}`);
+      }
       grid.appendChild(b);
     }
+    // Legenda: festività del mese mostrato (sul telefono non c'è il tooltip)
+    const prefix = `${view.getFullYear()}-${pad(view.getMonth() + 1)}-`;
+    const list = [...feste(view.getFullYear())].filter(([iso]) => iso.startsWith(prefix)).sort();
+    $('#feste-list').textContent = list.length
+      ? list.map(([iso, name]) => `${+iso.slice(8)} ${name}`).join(' · ')
+      : 'nessuna questo mese';
   }
   $('#grid').addEventListener('click', (e) => {
     const b = e.target.closest('.day');
@@ -597,7 +618,6 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     const hh = S.hour == null ? '<span class="dim">--</span>' : pad(S.hour);
     const mm = S.minute == null ? '<span class="dim">--</span>' : pad(S.minute);
     $('#clock').innerHTML = `${hh}:${mm}`;
-    $('#chef-0').textContent = whenRemark();
   }
 
   /* ---------- Menù ---------- */
@@ -649,7 +669,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   function fillWhen(dl, s) {
     dl.textContent = '';
     const rows = [
-      ['Giorno', cap(fmtLong.format(parseISO(s.date))), 'wide'],
+      ['Giorno', cap(fmtLong.format(parseISO(s.date))) + (festa(s.date) ? ` · ${festa(s.date)}` : ''), 'wide'],
       ['Ora', timeOf(s)],
       ['Coperti', '2'],
       ['Tavolo', 'Il solito'],
@@ -680,7 +700,6 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     fillWhen($('#r-when'), S);
     fillMenu($('#r-menu'), S);
     noteEl.value = S.note || '';
-    $('#chef-2').textContent = menuRemark();
   }
   function renderDone() {
     const b = S.booked;
