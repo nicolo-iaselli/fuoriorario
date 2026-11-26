@@ -529,7 +529,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   const ready0 = () => !!S.date && S.hour != null;
   const picked = (c, s = S) => c.libero
     ? [(s.testi?.[c.id] || '').trim()].filter(Boolean)
-    : c.piatti.filter((p) => s.items.includes(p.id)).map((p) => p.nome);
+    : [...new Set(c.piatti.filter((p) => s.items.includes(p.id)).map((p) => p.nome))];   // nomi uguali contano una volta (i 4 Satèn = 1)
   const countOf = (s = S) => MENU.reduce((n, c) => n + picked(c, s).length, 0);
   const menuLines = (s = S) => MENU.map((c) => `${c.titolo}: ${picked(c, s).join(', ') || '—'}`).join('\n');
 
