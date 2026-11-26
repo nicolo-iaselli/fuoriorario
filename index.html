@@ -123,6 +123,7 @@ main { flex: 1; }
 
 .step-title { font-size: clamp(1.5rem, 4.5vw, 2rem); margin-bottom: 4px; }
 .step-sub { margin: 0 0 16px; color: var(--muted); }
+.step-title + .menu { margin-top: 12px; }
 
 .card {
   background: var(--sheet); border: 1px solid var(--rule); border-radius: 18px;
@@ -351,7 +352,6 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   <!-- 2. Menù -->
   <section class="step" id="step-1" aria-labelledby="t1" hidden>
     <h2 class="step-title" id="t1">Il menù</h2>
-    <p class="step-sub">Spunta tutto quello che ti va, anche più cose per portata. Nessun limite, salvo quello dello stomaco.</p>
     <div class="menu" id="menu"></div>
   </section>
 
@@ -369,8 +369,8 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
       <div class="r-block-head"><h3>Menù</h3><button type="button" class="edit" data-go="1">modifica</button></div>
       <dl id="r-menu"></dl>
       <hr class="r-sep">
-      <label class="note-lbl" for="note">Note per lo chef <span style="font-weight:400;color:var(--muted)">(facoltative)</span></label>
-      <textarea id="note" maxlength="500" placeholder="Allergie, richieste, piatti che è meglio non provare a rifare…"></textarea>
+      <label class="note-lbl" for="note">Extra</label>
+      <textarea id="note" maxlength="500" placeholder="Qualunque cosa ti venga in mente"></textarea>
     </div>
   </section>
 
@@ -389,7 +389,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
       <dl class="r-when" id="d-when"></dl>
       <hr class="r-sep">
       <dl id="d-menu"></dl>
-      <div id="d-note-wrap" hidden><hr class="r-sep"><p class="note-lbl">Note per lo chef</p><p class="r-note" id="d-note"></p></div>
+      <div id="d-note-wrap" hidden><hr class="r-sep"><p class="note-lbl">Extra</p><p class="r-note" id="d-note"></p></div>
       <hr class="r-sep">
       <p class="r-foot">Lo chef è stato avvisato. Presentarsi con appetito: il dress code è facoltativo.</p>
     </div>
@@ -422,7 +422,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   const MENU = [
     { id: 'antipasti', titolo: 'Antipasti', piatti: [
       { id: 'a-alici', nome: 'Pane, Burro e Alici' },
-      { id: 'a-zuppetta', nome: 'Zuppetta di Pesce con Crostini' },
+      { id: 'a-zuppetta', nome: 'Zuppetta di Pesce con Crostini', nota: 'La zuppetta la prendiamo già fatta' },
       { id: 'a-nigiri', nome: 'Nigiri di Salmone' },
     ]},
     { id: 'primi', titolo: 'Primi', piatti: [
@@ -432,7 +432,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     ]},
     { id: 'secondi', titolo: 'Secondi', piatti: [
       { id: 's-salmone', nome: 'Trancio di Salmone e Purè' },
-      { id: 's-polpette', nome: 'Polpette di Pesce e Spinacini' },
+      { id: 's-polpette', nome: 'Polpette di Pesce e Spinacini', nota: 'Le polpette le prendiamo già fatte' },
       { id: 's-orata', nome: 'Orata in Padella e Pomodorini' },
     ]},
     { id: 'dolci', titolo: 'Dolci', libero: true, placeholder: 'Scrivi il dolce che ti va' },
@@ -767,7 +767,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     save();
     interacted = false;
     const msg = `${cap(fmtLong.format(d))}, ore ${timeOf(S)}\n\n${menuLines()}`
-      + (S.note ? `\n\nNote: ${S.note}` : '') + `\n\nCodice ${S.booked.code}`;
+      + (S.note ? `\n\nExtra: ${S.note}` : '') + `\n\nCodice ${S.booked.code}`;
     notify(again ? 'Prenotazione modificata' : 'Prenotazione confermata!', msg, { priority: 4, tags: ['white_check_mark', 'fork_and_knife'] });
     show(3);
   }
