@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Trattoria Fuoriorario</title>
-<meta name="description" content="Prenota un tavolo: giorno, ora e menù. Cucina aperta a qualunque ora.">
+<meta name="description" content="Prenota un tavolo: giorno, ora e menù.">
 <meta property="og:title" content="Trattoria Fuoriorario">
-<meta property="og:description" content="Prenota un tavolo: giorno, ora e menù. Cucina aperta a qualunque ora.">
+<meta property="og:description" content="Prenota un tavolo: giorno, ora e menù.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#f5efe3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1d1a17" media="(prefers-color-scheme: dark)">
@@ -163,18 +163,13 @@ main { flex: 1; }
 }
 .clock .dim { color: var(--disabled); }
 .time h3 { font-family: var(--sans); font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 16px 0 8px; }
-.hint { margin: 2px 0 0; color: var(--muted); font-size: .92rem; }
-.chips { display: grid; gap: 6px; }
-.chips.hours { grid-template-columns: repeat(6, 1fr); }
-.chips.minutes { grid-template-columns: repeat(4, 1fr); }
-@media (min-width: 520px) and (max-width: 819px) { .chips.hours { grid-template-columns: repeat(8, 1fr); } }
+.chips { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); }
 .chip {
   min-height: 44px; border-radius: 12px; border: 1px solid var(--rule); background: var(--paper);
   font-weight: 600; font-variant-numeric: tabular-nums;
 }
 .chip:hover { border-color: var(--accent); }
-.chip.night { background: transparent; border-style: dashed; }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); border-style: solid; color: var(--accent-ink); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
 /* Chef's note */
 .chef {
@@ -295,7 +290,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
 <header class="wrap top">
   <p class="kicker">Su prenotazione · Tavolo unico</p>
   <h1>Trattoria Fuoriorario</h1>
-  <p class="lede">Cucina aperta a qualunque ora. Tu scegli quando e cosa, lo chef si adegua.</p>
+  <p class="lede">Tu scegli quando e cosa, lo chef si adegua.</p>
   <div class="prova" id="prova" hidden>
     <span><strong>Modalità prova.</strong> Le notifiche arrivano con l'etichetta [PROVA]. <span id="muto-lbl" hidden>Anzi no: con <code>?muto</code> non parte nessuna notifica.</span></span>
     <button type="button" id="reset">Azzera tutto</button>
@@ -314,7 +309,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   <!-- 1. Quando -->
   <section class="step" id="step-0" aria-labelledby="t0">
     <h2 class="step-title" id="t0">Quando si cucina?</h2>
-    <p class="step-sub">Un giorno dal calendario e un'ora qualunque. Qualunque, davvero.</p>
+    <p class="step-sub">Un giorno dal calendario e un orario, a pranzo o a cena.</p>
     <div class="when">
       <div class="card">
         <div class="cal-head">
@@ -328,11 +323,10 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
       <div class="card time">
         <h2>Ora</h2>
         <div class="clock" id="clock" aria-live="polite"></div>
-        <p class="hint">Le ore tratteggiate sono notturne. Prenotabili comunque.</p>
-        <h3 id="lbl-h">Ore</h3>
-        <div class="chips hours" id="hours" role="group" aria-labelledby="lbl-h"></div>
-        <h3 id="lbl-m">Minuti</h3>
-        <div class="chips minutes" id="minutes" role="group" aria-labelledby="lbl-m"></div>
+        <h3 id="lbl-pranzo">Pranzo</h3>
+        <div class="chips" id="slots-pranzo" role="group" aria-labelledby="lbl-pranzo"></div>
+        <h3 id="lbl-cena">Cena</h3>
+        <div class="chips" id="slots-cena" role="group" aria-labelledby="lbl-cena"></div>
       </div>
     </div>
     <div class="chef" aria-live="polite"><p class="lbl">Nota dello chef</p><p class="txt" id="chef-0"></p></div>
@@ -396,7 +390,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   </div>
 </div>
 
-<footer class="wrap">Trattoria Fuoriorario · Coperti: 2 · Si accettano solo pagamenti in complimenti</footer>
+<footer class="wrap">Coperto incluso</footer>
 
 <script>
 (() => {
@@ -438,6 +432,17 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     ]},
   ];
 
+  /* ---------- Orari prenotabili: ogni 15 minuti, estremi inclusi ---------- */
+  const every15 = (from, to) => {
+    const out = [];
+    for (let t = from; t <= to; t += 15) out.push([Math.floor(t / 60), t % 60]);
+    return out;
+  };
+  const SLOTS = {
+    pranzo: every15(12 * 60 + 30, 14 * 60),        // 12:30 – 14:00
+    cena: every15(19 * 60 + 30, 21 * 60 + 30),     // 19:30 – 21:30
+  };
+
   const params = new URLSearchParams(location.search);
   const PROVA = params.has('prova') || params.has('muto');
   const MUTO = params.has('muto');
@@ -466,6 +471,8 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   if (S.booked && (!S.booked.date || parseISO(S.booked.date) < today)) S.booked = null;   // prenotazione già passata
   if (S.date && parseISO(S.date) < today) S.date = null;
   if (S.booked) Object.assign(S, { date: S.booked.date, hour: S.booked.hour, minute: S.booked.minute, items: S.booked.items.slice(), note: S.booked.note || '' });
+  const slotOk = (h, m) => Object.values(SLOTS).some((list) => list.some(([sh, sm]) => sh === h && sm === m));
+  if (!slotOk(S.hour, S.minute)) { S.hour = null; S.minute = null; }   // orario non più prenotabile
 
   /* ---------- Formati ---------- */
   const fmtLong = new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -512,35 +519,9 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   }
 
   /* ---------- Note dello chef ---------- */
-  function dayRemark() {
-    if (!S.date) return '';
-    const d = parseISO(S.date);
-    const diff = Math.round((d - today) / 864e5);
-    const wd = d.getDay();
-    if (diff === 0) return 'Oggi stesso: lo chef apprezza la fiducia e controlla cosa c\'è in frigo.';
-    if (diff === 1) return 'Domani: il tempo giusto per fare la spesa con calma.';
-    if (diff > 60) return 'Con largo anticipo: lo chef avrà tutto il tempo per allenarsi.';
-    if (wd === 0 || wd === 6) return 'Weekend: si cucina con calma e si lavano i piatti con ancora più calma.';
-    if (wd === 5) return 'Venerdì: la settimana si chiude a tavola.';
-    if (wd === 1) return 'Lunedì: scelta controcorrente. Il lunedì ringrazia.';
-    return 'Infrasettimanale: la cena che salva la settimana.';
-  }
-  function hourRemark() {
-    const h = S.hour;
-    if (h == null) return '';
-    if (h <= 4) return 'Cucina notturna: lo chef accende il fornello e finge di essere sveglio.';
-    if (h <= 8) return 'All\'alba? Colazione salata o cena molto tardiva, lo chef non giudica.';
-    if (h <= 10) return 'Colazione lunga: la moka è già d\'accordo.';
-    if (h === 11) return 'Brunch: parola che lo chef pronuncia solo se costretto.';
-    if (h <= 14) return 'Pranzo: orario da persone serie.';
-    if (h <= 17) return 'Merenda sostanziosa. Nessuno deve saperlo.';
-    if (h === 18) return 'Aperitivo che diventa cena: un classico.';
-    if (h <= 21) return 'Ora di cena. Lo chef approva senza riserve.';
-    return 'Cena tardi: si mangia quando si ha fame, non quando lo dice l\'orologio.';
-  }
   function whenRemark() {
-    const r = [dayRemark(), hourRemark()].filter(Boolean).join(' ');
-    return r || 'Scegli un giorno e un\'ora: lo chef si adegua.';
+    if (S.hour == null) return 'Scegli un giorno e un orario: lo chef si adegua.';
+    return S.hour < 17 ? 'Pranzo: orario da persone serie.' : 'Ora di cena. Lo chef approva senza riserve.';
   }
   function menuRemark() {
     const n = S.items.length;
@@ -593,34 +574,26 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   $('#prev').addEventListener('click', () => { view.setMonth(view.getMonth() - 1); renderCal(); });
   $('#next').addEventListener('click', () => { view.setMonth(view.getMonth() + 1); renderCal(); });
 
-  /* ---------- Ora ---------- */
-  const hoursEl = $('#hours'), minsEl = $('#minutes');
-  for (let h = 0; h < 24; h++) {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'chip' + (h <= 5 ? ' night' : ''); b.dataset.h = h; b.textContent = pad(h);
-    b.setAttribute('aria-label', `ore ${h}`);
-    hoursEl.appendChild(b);
-  }
-  [0, 15, 30, 45].forEach((m) => {
-    const b = document.createElement('button');
-    b.type = 'button'; b.className = 'chip'; b.dataset.m = m; b.textContent = ':' + pad(m);
-    b.setAttribute('aria-label', `${m} minuti`);
-    minsEl.appendChild(b);
+  /* ---------- Ora: solo gli orari in SLOTS ---------- */
+  const timeCard = $('.time');
+  Object.entries(SLOTS).forEach(([k, list]) => {
+    const box = $('#slots-' + k);
+    list.forEach(([h, m]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.dataset.h = h; b.dataset.m = m;
+      b.textContent = `${pad(h)}:${pad(m)}`;
+      box.appendChild(b);
+    });
   });
-  hoursEl.addEventListener('click', (e) => {
+  timeCard.addEventListener('click', (e) => {
     const b = e.target.closest('.chip'); if (!b) return;
-    S.hour = +b.dataset.h; if (S.minute == null) S.minute = 0;
-    touch(); save(); renderWhen(); renderBar();
-  });
-  minsEl.addEventListener('click', (e) => {
-    const b = e.target.closest('.chip'); if (!b) return;
-    S.minute = +b.dataset.m;
+    S.hour = +b.dataset.h; S.minute = +b.dataset.m;
     touch(); save(); renderWhen(); renderBar();
   });
 
   function renderWhen() {
-    hoursEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.h === S.hour)));
-    minsEl.querySelectorAll('.chip').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.m === S.minute)));
+    timeCard.querySelectorAll('.chip').forEach((b) =>
+      b.setAttribute('aria-pressed', String(+b.dataset.h === S.hour && +b.dataset.m === S.minute)));
     const hh = S.hour == null ? '<span class="dim">--</span>' : pad(S.hour);
     const mm = S.minute == null ? '<span class="dim">--</span>' : pad(S.minute);
     $('#clock').innerHTML = `${hh}:${mm}`;
