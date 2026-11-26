@@ -148,13 +148,19 @@ main { flex: 1; }
 .day {
   aspect-ratio: 1; min-height: 40px; border-radius: 12px;
   border: 1px solid transparent; background: transparent;
-  font-weight: 500; font-size: 1rem; font-variant-numeric: tabular-nums;
-  position: relative;
+  font-weight: 500; font-size: 1rem; line-height: 1.15; font-variant-numeric: tabular-nums;
+  position: relative; padding: 0 1px;
+  display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; justify-items: center;
 }
+.day small {
+  display: block; max-width: 100%; overflow: hidden; white-space: nowrap;
+  margin-top: 2px; font-size: .56rem; font-weight: 600; line-height: 1; letter-spacing: -.02em;
+}
+@media (min-width: 560px) { .day small { font-size: .62rem; letter-spacing: 0; } }
 .day:not(:disabled):hover { background: var(--accent-soft); }
 .day.weekend:not(:disabled) { color: var(--accent); }
 .day.today { border-color: var(--olive); }
-.day.today::after {
+.day.today:not(.festa)::after {
   content: "oggi"; position: absolute; left: 0; right: 0; bottom: 3px;
   font-size: .58rem; font-weight: 600; letter-spacing: .04em; color: var(--olive);
 }
@@ -478,17 +484,22 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
   const festeCache = {};
   function feste(y) {
     if (festeCache[y]) return festeCache[y];
+    // [nome completo, sigla sotto il numero del giorno]
     const map = new Map(Object.entries({
-      '01-01': 'Capodanno', '01-06': 'Epifania', '04-25': 'Festa della Liberazione', '05-01': 'Festa dei Lavoratori',
-      '06-02': 'Festa della Repubblica', '08-15': 'Ferragosto', '10-04': 'San Francesco', '11-01': 'Ognissanti',
-      '12-08': 'Immacolata', '12-25': 'Natale', '12-26': 'Santo Stefano',
-    }).map(([md, name]) => [`${y}-${md}`, name]));
+      '01-01': ['Capodanno', 'Capod.'], '01-06': ['Epifania', 'Epifania'],
+      '04-25': ['Festa della Liberazione', 'Liberaz.'], '05-01': ['Festa dei Lavoratori', 'Lavoro'],
+      '06-02': ['Festa della Repubblica', 'Repubbl.'], '08-15': ['Ferragosto', 'Ferrag.'],
+      '10-04': ['San Francesco', 'S. Franc.'], '11-01': ['Ognissanti', 'Ognis.'],
+      '12-08': ['Immacolata', 'Immac.'], '12-24': ['Vigilia di Natale', 'Vigilia'], '12-25': ['Natale', 'Natale'],
+      '12-26': ['Santo Stefano', 'S. Stef.'], '12-31': ['San Silvestro', 'S. Silv.'],
+    }).map(([md, [nome, breve]]) => [`${y}-${md}`, { nome, breve }]));
     const e = pasqua(y), lun = new Date(y, e.getMonth(), e.getDate() + 1);
-    map.set(toISO(e), 'Pasqua');
-    map.set(toISO(lun), 'Pasquetta');
+    map.set(toISO(e), { nome: 'Pasqua', breve: 'Pasqua' });
+    map.set(toISO(lun), { nome: 'Pasquetta', breve: 'Pasquet.' });
     return (festeCache[y] = map);
   }
-  const festa = (iso) => (iso ? feste(+iso.slice(0, 4)).get(iso) || '' : '');
+  const festaInfo = (iso) => (iso ? feste(+iso.slice(0, 4)).get(iso) : undefined);
+  const festa = (iso) => festaInfo(iso)?.nome || '';
 
   const S = Object.assign({ date: null, hour: null, minute: null, items: [], note: '', booked: null }, load() || {});
   S.items = Array.isArray(S.items) ? S.items.filter((id) => ids.has(id)) : [];
@@ -571,11 +582,14 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
       if (date < today) b.disabled = true;
       if (+date === +today) b.classList.add('today');
       if (date.getDay() === 0 || date.getDay() === 6) b.classList.add('weekend');
-      const f = festa(iso);
+      const f = festaInfo(iso);
       if (f) {
         b.classList.add('festa');
-        b.title = f;
-        b.setAttribute('aria-label', `${cap(fmtLong.format(date))}, ${f}`);
+        b.title = f.nome;
+        b.setAttribute('aria-label', `${cap(fmtLong.format(date))}, ${f.nome}`);
+        const s = document.createElement('small');
+        s.textContent = f.breve;
+        b.appendChild(s);
       }
       grid.appendChild(b);
     }
@@ -583,7 +597,7 @@ footer { padding: 26px 0 30px; color: var(--muted); font-size: .85rem; text-alig
     const prefix = `${view.getFullYear()}-${pad(view.getMonth() + 1)}-`;
     const list = [...feste(view.getFullYear())].filter(([iso]) => iso.startsWith(prefix)).sort();
     $('#feste-list').textContent = list.length
-      ? list.map(([iso, name]) => `${+iso.slice(8)} ${name}`).join(' · ')
+      ? list.map(([iso, f]) => `${+iso.slice(8)} ${f.nome}`).join(' · ')
       : 'nessuna questo mese';
   }
   $('#grid').addEventListener('click', (e) => {
